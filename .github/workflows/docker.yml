@@ -24,7 +24,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: dstansice/aikdownloader:latest
+          tags: tans0008/aikdownloader:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           no-cache: true 
