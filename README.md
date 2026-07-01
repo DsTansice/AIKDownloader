@@ -17,6 +17,8 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/DsTansice/AIKDownloader)
 
+已支持docker,默认端口3000
+
 ## 📦 手动部署
 
 ```bash
