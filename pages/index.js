@@ -212,7 +212,7 @@ export default function Home() {
             </div>
             <div className="info-item">
               <div className="label">🔑 Hash</div>
-              <div className="value hash">{result.hash}</div>
+              <div className="value">{result.hash}</div>
             </div>
           </div>
 
@@ -485,14 +485,9 @@ export default function Home() {
         }
         .song-info {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
           gap: 10px;
           margin-bottom: 20px;
-        }
-        @media (max-width: 600px) {
-          .song-info {
-            grid-template-columns: repeat(2, 1fr);
-          }
         }
         .info-item {
           background: rgba(0,0,0,0.2);
@@ -509,10 +504,6 @@ export default function Home() {
           font-size: 0.95rem;
           color: #e0e0e0;
           word-break: break-all;
-        }
-        .info-item .value.hash {
-          font-size: 10px;
-          font-family: monospace;
         }
         .link-box {
           background: rgba(0,0,0,0.25);
@@ -531,9 +522,9 @@ export default function Home() {
           opacity: 0.7;
         }
         .link-box .link-label {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           color: #00d4ff;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
           font-weight: 600;
         }
         .link-box .link-label.hq-label {
