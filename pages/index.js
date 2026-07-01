@@ -212,112 +212,77 @@ export default function Home() {
             </div>
             <div className="info-item">
               <div className="label">🔑 Hash</div>
-              <div className="value" style={{ fontSize: '10px' }}>{result.hash}</div>
+              <div className="value hash">{result.hash}</div>
             </div>
           </div>
 
-          {/* 128kbps 区域 */}
+          {/* 128kbps */}
           <div className="link-box">
-            <div className="link-label">🎧 在线试听（128kbps）</div>
-            <audio
-              ref={audioRef}
-              className="audio-player"
-              controls
-              preload="metadata"
-              src={result.mp3Url}
-            />
-            <div className="link-url" style={{ marginTop: '10px' }}>{result.mp3Url}</div>
+            <div className="link-label">🎵 标准音质（128kbps）</div>
+            <audio className="audio-player" controls preload="metadata" src={result.mp3Url} />
+            <div className="link-url">{result.mp3Url}</div>
             <div className="link-actions">
-              <button
-                className="btn-small btn-copy"
-                onClick={() => copyToClipboard(result.mp3Url)}
-              >
+              <button className="btn-small btn-copy" onClick={() => copyToClipboard(result.mp3Url)}>
                 📋 复制链接
               </button>
-              <button
-                className="btn-small btn-download"
-                onClick={() => downloadFile(result.mp3Url, filename128)}
-              >
+              <button className="btn-small btn-download" onClick={() => downloadFile(result.mp3Url, filename128)}>
                 ⬇️ 下载 128kbps
               </button>
             </div>
           </div>
 
-          {/* 备用链接 */}
+          {/* 备用 */}
           {result.backupUrl && (
             <div className="link-box">
               <div className="link-label">🔗 备用链接（TX 节点）</div>
               <div className="link-url">{result.backupUrl}</div>
               <div className="link-actions">
-                <button
-                  className="btn-small btn-copy"
-                  onClick={() => copyToClipboard(result.backupUrl)}
-                >
+                <button className="btn-small btn-copy" onClick={() => copyToClipboard(result.backupUrl)}>
                   📋 复制
                 </button>
-                <button
-                  className="btn-small btn-download"
-                  onClick={() => downloadFile(result.backupUrl, filename128)}
-                >
+                <button className="btn-small btn-download" onClick={() => downloadFile(result.backupUrl, filename128)}>
                   ⬇️ 下载
                 </button>
               </div>
             </div>
           )}
 
-          {/* 320kbps 高音质区域 */}
+          {/* 320kbps */}
           {hasHQ ? (
             <div className="link-box hq-box">
-              <div className="link-label" style={{ color: '#ffc107' }}>
+              <div className="link-label hq-label">
                 💎 高音质（{result.hqBitrate || 320}kbps）
               </div>
-              <audio
-                className="audio-player"
-                controls
-                preload="metadata"
-                src={result.hqUrl}
-              />
-              <div className="link-url" style={{ marginTop: '10px' }}>{result.hqUrl}</div>
+              <audio className="audio-player" controls preload="metadata" src={result.hqUrl} />
+              <div className="link-url">{result.hqUrl}</div>
               <div className="link-actions">
-                <button
-                  className="btn-small btn-copy"
-                  onClick={() => copyToClipboard(result.hqUrl)}
-                >
+                <button className="btn-small btn-copy" onClick={() => copyToClipboard(result.hqUrl)}>
                   📋 复制链接
                 </button>
-                <button
-                  className="btn-small btn-download"
-                  onClick={() => downloadFile(result.hqUrl, filename320)}
-                >
+                <button className="btn-small btn-download" onClick={() => downloadFile(result.hqUrl, filename320)}>
                   ⬇️ 下载 320kbps
                 </button>
               </div>
               {result.hqBackupUrl && (
-                <div style={{ marginTop: '8px' }}>
-                  <div className="link-url">{result.hqBackupUrl}</div>
+                <>
+                  <div className="link-url" style={{ marginTop: '8px' }}>{result.hqBackupUrl}</div>
                   <div className="link-actions">
-                    <button
-                      className="btn-small btn-copy"
-                      onClick={() => copyToClipboard(result.hqBackupUrl)}
-                    >
+                    <button className="btn-small btn-copy" onClick={() => copyToClipboard(result.hqBackupUrl)}>
                       📋 复制备用
                     </button>
-                    <button
-                      className="btn-small btn-download"
-                      onClick={() => downloadFile(result.hqBackupUrl, filename320)}
-                    >
+                    <button className="btn-small btn-download" onClick={() => downloadFile(result.hqBackupUrl, filename320)}>
                       ⬇️ 下载备用
                     </button>
                   </div>
-                </div>
+                </>
               )}
             </div>
           ) : (
-            <div className="link-box" style={{ borderColor: 'rgba(255,193,7,0.15)', opacity: 0.7 }}>
+            <div className="link-box disabled-box">
               <div className="link-label" style={{ color: '#888' }}>
                 💎 高音质（320kbps）— 未获取到链接
               </div>
-              <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+              <p className="disabled-text">
                 该歌曲可能不提供 320kbps 下载，或需要 VIP 权限
               </p>
             </div>
@@ -330,14 +295,14 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>酷狗音乐分享链接解析器</title>
+        <title>酷狗AIK音乐解析下载器</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div className="page">
         <div className="header">
-          <h1>🎵 酷狗音乐分享链接解析器</h1>
-          <p>粘贴分享链接，自动提取 MP3 下载地址（支持 128kbps / 320kbps）</p>
+          <h1>🎵 酷狗AIK音乐解析下载器</h1>
+          <p>粘贴分享链接，自动提取 MP3 下载地址</p>
         </div>
 
         <div className={`main-content ${isWide ? 'wide' : ''}`}>
@@ -520,9 +485,14 @@ export default function Home() {
         }
         .song-info {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          grid-template-columns: repeat(4, 1fr);
           gap: 10px;
           margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+          .song-info {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
         .info-item {
           background: rgba(0,0,0,0.2);
@@ -540,6 +510,10 @@ export default function Home() {
           color: #e0e0e0;
           word-break: break-all;
         }
+        .info-item .value.hash {
+          font-size: 10px;
+          font-family: monospace;
+        }
         .link-box {
           background: rgba(0,0,0,0.25);
           border: 1px solid rgba(0,212,255,0.2);
@@ -551,11 +525,19 @@ export default function Home() {
           border-color: rgba(255,193,7,0.3);
           background: rgba(255,193,7,0.03);
         }
+        .link-box.disabled-box {
+          border-color: rgba(255,255,255,0.05);
+          background: rgba(0,0,0,0.1);
+          opacity: 0.7;
+        }
         .link-box .link-label {
-          font-size: 0.8rem;
+          font-size: 0.85rem;
           color: #00d4ff;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
           font-weight: 600;
+        }
+        .link-box .link-label.hq-label {
+          color: #ffc107;
         }
         .link-box .link-url {
           font-family: "SF Mono", "Consolas", monospace;
@@ -598,9 +580,14 @@ export default function Home() {
         }
         .audio-player {
           width: 100%;
-          margin-top: 10px;
+          margin-bottom: 10px;
           border-radius: 8px;
           height: 40px;
+        }
+        .disabled-text {
+          font-size: 0.8rem;
+          color: #666;
+          margin-top: 4px;
         }
         .error-msg {
           background: rgba(244,67,54,0.1);
