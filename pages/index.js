@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import Head from 'next/head'
 
 export default function Home() {
-  const [url, setUrl] = useState('https://t1.kugou.com/645R5cG3V3')
+  const [url, setUrl] = useState('https://t1.kugou.com/6n5V11G3V3')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -90,6 +90,15 @@ export default function Home() {
             </div>
 
             {error && <div className="box err">❌ {error}</div>}
+
+            <div className="box about">
+              <div className="box-h">📌 关于</div>
+              <div className="about-links">
+                <a href="https://about.ikl.ink" target="_blank" rel="noopener noreferrer" className="about-link">👤 作者主页</a>
+                <a href="https://github.com/DsTansice/AIKDownloader" target="_blank" rel="noopener noreferrer" className="about-link">📁 GitHub 项目</a>
+                <a href="https://thanks.ikl.ink" target="_blank" rel="noopener noreferrer" className="about-link">☕ 捐赠支持</a>
+              </div>
+            </div>
           </div>
 
           {/* 右侧 */}
@@ -207,18 +216,22 @@ export default function Home() {
 
         .err { background:rgba(244,67,54,0.08); border-color:rgba(244,67,54,0.2); color:#f44336; text-align:center; }
 
+        /* 关于区块 */
+        .about { background:rgba(255,255,255,0.03); }
+        .about-links { display:flex; flex-direction:column; gap:8px; }
+        .about-link { display:block; padding:10px 14px; background:rgba(0,0,0,0.2); border-radius:8px; color:#b0b0b0; text-decoration:none; font-size:0.9rem; transition:all 0.2s; border:1px solid rgba(255,255,255,0.05); }
+        .about-link:hover { background:rgba(0,212,255,0.1); color:#00d4ff; border-color:rgba(0,212,255,0.2); transform:translateX(4px); }
+
         .empty { min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#555; }
         .empty-icon { font-size:3.5rem; margin-bottom:12px; opacity:0.4; }
         .empty-sub { font-size:0.85rem; color:#666; margin-top:4px; }
 
-        /* 歌曲信息 */
         .info-row { display:flex; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
         .cover { width:100px; height:100px; border-radius:10px; object-fit:cover; border:2px solid rgba(0,212,255,0.3); }
         .info-name { font-size:1.4rem; font-weight:600; color:#fff; margin-bottom:4px; }
         .info-singer { color:#8892b0; font-size:0.95rem; }
         .info-aik { color:#00d4ff; font-size:0.8rem; margin-top:4px; }
 
-        /* 统计卡片 */
         .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
         @media(max-width:600px){ .stats { grid-template-columns:repeat(2,1fr); } }
         .stat { background:rgba(0,0,0,0.25); border-radius:10px; padding:12px; }
@@ -226,7 +239,6 @@ export default function Home() {
         .stat-v { font-size:0.95rem; color:#e0e0e0; }
         .stat-v.hash { font-size:10px; font-family:monospace; word-break:break-all; }
 
-        /* 各区块 */
         .sec { background:rgba(0,0,0,0.2); border:1px solid rgba(0,212,255,0.2); border-radius:12px; padding:14px; margin-bottom:12px; }
         .sec-h { color:#00d4ff; font-size:0.85rem; font-weight:600; margin-bottom:10px; }
         .sec.hq { border-color:rgba(255,193,7,0.3); background:rgba(255,193,7,0.03); }
