@@ -91,7 +91,8 @@ export default function Home() {
 
             {error && <div className="box err">❌ {error}</div>}
 
-            <div className="box about">
+            {/* 左侧 about - 宽屏显示 */}
+            <div className="box about-desktop">
               <div className="box-h">📌 关于</div>
               <div className="about-links">
                 <a href="https://about.ikl.ink" target="_blank" rel="noopener noreferrer" className="about-link">👤 作者主页</a>
@@ -186,6 +187,15 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 底栏 - 窄屏显示 */}
+      <div className="footer-bar">
+        <a href="https://about.ikl.ink" target="_blank" rel="noopener noreferrer">👤 作者</a>
+        <span className="footer-sep">|</span>
+        <a href="https://github.com/DsTansice/AIKDownloader" target="_blank" rel="noopener noreferrer">📁 GitHub</a>
+        <span className="footer-sep">|</span>
+        <a href="https://thanks.ikl.ink" target="_blank" rel="noopener noreferrer">☕ 捐赠</a>
+      </div>
+
       <div className="toast" id="toast" />
 
       <style jsx>{`
@@ -216,11 +226,22 @@ export default function Home() {
 
         .err { background:rgba(244,67,54,0.08); border-color:rgba(244,67,54,0.2); color:#f44336; text-align:center; }
 
-        /* 关于区块 */
-        .about { background:rgba(255,255,255,0.03); }
+        /* 关于区块 - 宽屏左侧卡片 */
+        .about-desktop { background:rgba(255,255,255,0.03); }
         .about-links { display:flex; flex-direction:column; gap:8px; }
         .about-link { display:block; padding:10px 14px; background:rgba(0,0,0,0.2); border-radius:8px; color:#b0b0b0; text-decoration:none; font-size:0.9rem; transition:all 0.2s; border:1px solid rgba(255,255,255,0.05); }
         .about-link:hover { background:rgba(0,212,255,0.1); color:#00d4ff; border-color:rgba(0,212,255,0.2); transform:translateX(4px); }
+
+        /* 底栏 - 默认隐藏，窄屏显示 */
+        .footer-bar { display:none; }
+
+        @media(max-width:1100px){
+          .about-desktop { display:none; }
+          .footer-bar { display:flex; align-items:center; justify-content:center; gap:16px; padding:16px; background:rgba(0,0,0,0.3); border-top:1px solid rgba(255,255,255,0.08); margin-top:20px; }
+          .footer-bar a { color:#8892b0; text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+          .footer-bar a:hover { color:#00d4ff; }
+          .footer-sep { color:#444; }
+        }
 
         .empty { min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#555; }
         .empty-icon { font-size:3.5rem; margin-bottom:12px; opacity:0.4; }
