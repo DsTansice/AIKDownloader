@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Head from 'next/head'
 
 export default function Home() {
@@ -6,7 +6,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [isWide, setIsWide] = useState(false)
   const audioRef = useRef(null)
+
+  // 检测宽屏
+  useEffect(() => {
+    const check = () => setIsWide(window.innerWidth >= 1100)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const handleParse = async () => {
     if (!url.trim()) {
@@ -53,18 +62,35 @@ export default function Home() {
     })
   }
 
+  // 通过 fetch 下载文件，解决 Chrome 直接打开 MP3 的问题
+  const downloadFile = async (url, filename) => {
+    showToast('⏳ 正在下载...')
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error('下载失败')
+
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      window.URL.revokeObjectURL(blobUrl)
+      showToast('✅ 下载完成！')
+    } catch (err) {
+      showToast('❌ 下载失败: ' + err.message)
+    }
+  }
+
   const showToast = (msg) => {
     const toast = document.getElementById('toast')
     toast.textContent = msg
     toast.classList.add('show')
-    setTimeout(() => toast.classList.remove('show'), 2000)
-  }
-
-  const esc = (text) => {
-    if (!text) return ''
-    const div = document.createElement('div')
-    div.textContent = text
-    return div.innerHTML
+    setTimeout(() => toast.classList.remove('show'), 2500)
   }
 
   const formatDuration = (sec) => {
@@ -79,6 +105,191 @@ export default function Home() {
     return (bytes / 1024).toFixed(1) + ' KB'
   }
 
+  const getSafeFilename = (singer, songName) => {
+    return `${singer || 'unknown'} - ${songName || 'unknown'}.mp3`.replace(/[\\/:*?"<>|]/g, '_')
+  }
+
+  // 左侧：输入区域
+  const LeftPanel = () => (
+    <div className="left-panel">
+      <div className="card">
+        <div className="card-title">🔗 输入分享链接</div>
+        <div className="input-group">
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleParse()}
+            placeholder="https://t1.kugou.com/xxxx"
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleParse}
+            disabled={loading}
+          >
+            {loading ? (
+              <><span className="loading"></span> 解析中...</>
+            ) : (
+              <>🔍 开始解析</>
+            )}
+          </button>
+        </div>
+
+        <div className="steps">
+          <h3>📖 使用说明</h3>
+          <ol>
+            <li>复制酷狗音乐分享链接（如 <code>t1.kugou.com/xxxx</code>）</li>
+            <li>粘贴到上方输入框，点击"开始解析"</li>
+            <li>后端自动获取页面并提取 MP3 直链</li>
+            <li>支持在线试听、复制链接、下载文件</li>
+          </ol>
+        </div>
+      </div>
+
+      {error && (
+        <div className="card">
+          <div className="error-msg">❌ {error}</div>
+        </div>
+      )}
+    </div>
+  )
+
+  // 右侧：结果区域
+  const RightPanel = () => {
+    if (!result) {
+      return (
+        <div className="right-panel empty">
+          <div className="placeholder">
+            <div className="placeholder-icon">🎵</div>
+            <p>在左侧输入链接并解析</p>
+            <p style={{ fontSize: '0.85rem', color: '#666' }}>结果将显示在这里</p>
+          </div>
+        </div>
+      )
+    }
+
+    const filename = getSafeFilename(result.singer, result.songName)
+
+    return (
+      <div className="right-panel">
+        <div className="card result">
+          <div className="card-title">✅ 解析结果</div>
+
+          <div className="song-header">
+            {result.albumImg && (
+              <img
+                className="cover-img"
+                src={result.albumImg.replace('{size}', '400')}
+                alt="封面"
+                onError={(e) => { e.target.style.display = 'none' }}
+              />
+            )}
+            <div className="song-meta">
+              <h2>{result.songName}</h2>
+              <p>
+                🎤 {result.singer}
+                {result.originalSinger && ` (原唱: ${result.originalSinger})`}
+              </p>
+              {result.isAIK && (
+                <p style={{ fontSize: '0.8rem', color: '#00d4ff', marginTop: '4px' }}>
+                  🤖 AI 翻唱作品
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="song-info">
+            <div className="info-item">
+              <div className="label">⏱️ 时长</div>
+              <div className="value">{formatDuration(result.duration)}</div>
+            </div>
+            <div className="info-item">
+              <div className="label">🔊 码率</div>
+              <div className="value">{result.bitrate} kbps</div>
+            </div>
+            <div className="info-item">
+              <div className="label">📦 大小</div>
+              <div className="value">{formatSize(result.fileSize)}</div>
+            </div>
+            <div className="info-item">
+              <div className="label">🔑 Hash</div>
+              <div className="value" style={{ fontSize: '10px' }}>{result.hash}</div>
+            </div>
+          </div>
+
+          <div className="link-box">
+            <div className="link-label">🎧 在线试听</div>
+            <audio
+              ref={audioRef}
+              className="audio-player"
+              controls
+              preload="metadata"
+              src={result.mp3Url}
+            />
+          </div>
+
+          <div className="link-box">
+            <div className="link-label">📥 MP3 直链（128kbps）</div>
+            <div className="link-url">{result.mp3Url}</div>
+            <div className="link-actions">
+              <button
+                className="btn-small btn-copy"
+                onClick={() => copyToClipboard(result.mp3Url)}
+              >
+                📋 复制链接
+              </button>
+              <button
+                className="btn-small btn-download"
+                onClick={() => downloadFile(result.mp3Url, filename)}
+              >
+                ⬇️ 下载 MP3
+              </button>
+            </div>
+          </div>
+
+          {result.backupUrl && (
+            <div className="link-box">
+              <div className="link-label">🔗 备用链接（TX 节点）</div>
+              <div className="link-url">{result.backupUrl}</div>
+              <div className="link-actions">
+                <button
+                  className="btn-small btn-copy"
+                  onClick={() => copyToClipboard(result.backupUrl)}
+                >
+                  📋 复制
+                </button>
+                <button
+                  className="btn-small btn-download"
+                  onClick={() => downloadFile(result.backupUrl, filename)}
+                >
+                  ⬇️ 下载
+                </button>
+              </div>
+            </div>
+          )}
+
+          {result.extra && result.extra['320hash'] && (
+            <div className="link-box" style={{ borderColor: 'rgba(255,193,7,0.2)' }}>
+              <div className="link-label" style={{ color: '#ffc107' }}>
+                💎 高音质信息（320kbps）
+              </div>
+              <div className="song-info" style={{ marginBottom: 0 }}>
+                <div className="info-item">
+                  <div className="label">Hash</div>
+                  <div className="value" style={{ fontSize: '10px' }}>{result.extra['320hash']}</div>
+                </div>
+                <div className="info-item">
+                  <div className="label">大小</div>
+                  <div className="value">{formatSize(result.extra['320filesize'])}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <Head>
@@ -86,195 +297,71 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="container">
+      <div className="page">
         <div className="header">
           <h1>🎵 酷狗音乐分享链接解析器</h1>
           <p>粘贴分享链接，自动提取 MP3 下载地址</p>
         </div>
 
-        <div className="card">
-          <div className="card-title">🔗 输入分享链接</div>
-          <div className="input-group">
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleParse()}
-              placeholder="https://t1.kugou.com/xxxx"
-            />
-            <button
-              className="btn btn-primary"
-              onClick={handleParse}
-              disabled={loading}
-            >
-              {loading ? (
-                <><span className="loading"></span> 解析中...</>
-              ) : (
-                <>🔍 开始解析</>
-              )}
-            </button>
-          </div>
-
-          <div className="steps">
-            <h3>📖 使用说明</h3>
-            <ol>
-              <li>复制酷狗音乐分享链接（如 <code>t1.kugou.com/xxxx</code>）</li>
-              <li>粘贴到上方输入框，点击"开始解析"</li>
-              <li>后端自动获取页面并提取 MP3 直链</li>
-              <li>支持在线试听、复制链接、直接下载</li>
-            </ol>
-          </div>
+        <div className={`main-content ${isWide ? 'wide' : ''}`}>
+          <LeftPanel />
+          <RightPanel />
         </div>
-
-        {error && (
-          <div className="card">
-            <div className="error-msg">❌ {error}</div>
-          </div>
-        )}
-
-        {result && (
-          <div className="card result">
-            <div className="card-title">✅ 解析结果</div>
-
-            <div className="song-header">
-              {result.albumImg && (
-                <img
-                  className="cover-img"
-                  src={result.albumImg.replace('{size}', '400')}
-                  alt="封面"
-                  onError={(e) => { e.target.style.display = 'none' }}
-                />
-              )}
-              <div className="song-meta">
-                <h2>{result.songName}</h2>
-                <p>
-                  🎤 {result.singer}
-                  {result.originalSinger && ` (原唱: ${result.originalSinger})`}
-                </p>
-                {result.isAIK && (
-                  <p style={{ fontSize: '0.8rem', color: '#00d4ff', marginTop: '4px' }}>
-                    🤖 AI 翻唱作品
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="song-info">
-              <div className="info-item">
-                <div className="label">⏱️ 时长</div>
-                <div className="value">{formatDuration(result.duration)}</div>
-              </div>
-              <div className="info-item">
-                <div className="label">🔊 码率</div>
-                <div className="value">{result.bitrate} kbps</div>
-              </div>
-              <div className="info-item">
-                <div className="label">📦 大小</div>
-                <div className="value">{formatSize(result.fileSize)}</div>
-              </div>
-              <div className="info-item">
-                <div className="label">🔑 Hash</div>
-                <div className="value" style={{ fontSize: '10px' }}>{result.hash}</div>
-              </div>
-            </div>
-
-            <div className="link-box">
-              <div className="link-label">🎧 在线试听</div>
-              <audio
-                ref={audioRef}
-                className="audio-player"
-                controls
-                preload="metadata"
-                src={result.mp3Url}
-              />
-            </div>
-
-            <div className="link-box">
-              <div className="link-label">📥 MP3 直链（128kbps）</div>
-              <div className="link-url">{result.mp3Url}</div>
-              <div className="link-actions">
-                <button
-                  className="btn-small btn-copy"
-                  onClick={() => copyToClipboard(result.mp3Url)}
-                >
-                  📋 复制链接
-                </button>
-                <a
-                  href={result.mp3Url}
-                  download={`${result.singer} - ${result.songName}.mp3`.replace(/[\\/:*?"<>|]/g, '_')}
-                  className="btn-small btn-download"
-                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  ⬇️ 下载 MP3
-                </a>
-              </div>
-            </div>
-
-            {result.backupUrl && (
-              <div className="link-box">
-                <div className="link-label">🔗 备用链接（TX 节点）</div>
-                <div className="link-url">{result.backupUrl}</div>
-                <div className="link-actions">
-                  <button
-                    className="btn-small btn-copy"
-                    onClick={() => copyToClipboard(result.backupUrl)}
-                  >
-                    📋 复制
-                  </button>
-                  <a
-                    href={result.backupUrl}
-                    download={`${result.singer} - ${result.songName}.mp3`.replace(/[\\/:*?"<>|]/g, '_')}
-                    className="btn-small btn-download"
-                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                  >
-                    ⬇️ 下载
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {result.extra && result.extra['320hash'] && (
-              <div className="link-box" style={{ borderColor: 'rgba(255,193,7,0.2)' }}>
-                <div className="link-label" style={{ color: '#ffc107' }}>
-                  💎 高音质信息（320kbps）
-                </div>
-                <div className="song-info" style={{ marginBottom: 0 }}>
-                  <div className="info-item">
-                    <div className="label">Hash</div>
-                    <div className="value" style={{ fontSize: '10px' }}>{result.extra['320hash']}</div>
-                  </div>
-                  <div className="info-item">
-                    <div className="label">大小</div>
-                    <div className="value">{formatSize(result.extra['320filesize'])}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="toast" id="toast"></div>
 
       <style jsx>{`
-        .container {
-          max-width: 800px;
-          margin: 0 auto;
+        .page {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+          color: #e0e0e0;
           padding: 20px;
         }
         .header {
           text-align: center;
-          padding: 30px 0;
+          padding: 20px 0 30px;
+          max-width: 1200px;
+          margin: 0 auto;
         }
         .header h1 {
-          font-size: 2rem;
+          font-size: 1.8rem;
           color: #00d4ff;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
           text-shadow: 0 0 20px rgba(0,212,255,0.3);
         }
         .header p {
           color: #8892b0;
           font-size: 0.9rem;
+        }
+        .main-content {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .main-content.wide {
+          max-width: 1200px;
+          display: grid;
+          grid-template-columns: 420px 1fr;
+          gap: 20px;
+          align-items: start;
+        }
+        .left-panel, .right-panel {
+          width: 100%;
+        }
+        .right-panel.empty {
+          min-height: 400px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .placeholder {
+          text-align: center;
+          color: #555;
+        }
+        .placeholder-icon {
+          font-size: 4rem;
+          margin-bottom: 16px;
+          opacity: 0.5;
         }
         .card {
           background: rgba(255,255,255,0.05);
@@ -396,7 +483,7 @@ export default function Home() {
         }
         .song-info {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
           gap: 10px;
           margin-bottom: 20px;
         }
@@ -513,11 +600,14 @@ export default function Home() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-        @media (max-width: 600px) {
+        @media (max-width: 1100px) {
           .header h1 { font-size: 1.4rem; }
           .song-header { flex-direction: column; text-align: center; }
           .input-group { flex-direction: column; }
           .input-group input { width: 100%; }
+          .main-content.wide {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
     </>
