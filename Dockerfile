@@ -5,7 +5,7 @@ WORKDIR /app
 
 # 先复制依赖文件，利用缓存
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci 
 
 # 复制源码并构建
 COPY . .
